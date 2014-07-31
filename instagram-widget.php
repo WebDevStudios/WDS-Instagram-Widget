@@ -274,6 +274,34 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 	}
 
+	/**
+	 * Strip Emoji icons
+	 *
+	 * @since  1.0.0
+	 *
+	 * @param  string  $text String to clean up
+	 *
+	 * @return string        Cleaned up string
+	 */
+	public static function removeEmoji( $text = '' ) {
+
+		$clean_text = '';
+
+		// Match Emoticons
+		$regexEmoticons = '/[\x{1F600}-\x{1F64F}]/u';
+		$clean_text .= preg_replace( $regexEmoticons, '', $text );
+
+		// Match Miscellaneous Symbols and Pictographs
+		$regexSymbols = '/[\x{1F300}-\x{1F5FF}]/u';
+		$clean_text = preg_replace( $regexSymbols, '', $clean_text );
+
+		// Match Transport And Map Symbols
+		$regexTransport = '/[\x{1F680}-\x{1F6FF}]/u';
+		$clean_text = preg_replace( $regexTransport, '', $clean_text );
+
+		return $clean_text;
+	}
+
 } // WDS_Instagram_Widget
 
 
