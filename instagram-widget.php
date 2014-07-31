@@ -64,7 +64,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 					echo apply_filters( 'wds_instagram_widget_image_html', sprintf( '<li><a href="%1$s"><img class="instagram-image" src="%2$s" alt="%3$s" title="%3$s" /></a></li>',
 						$image['link'],
 						$image['images'][ $image_res ]['url'],
-						$image['title']
+						$image['text']
 					), $image );
 				}
 			?>
