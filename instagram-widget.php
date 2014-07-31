@@ -2,16 +2,11 @@
 /*
 Plugin Name: Instagram Widget
 Description: Display your latest Instagrams in a sidebar widget.
-Version: 0.1-alpha
+Version: 1.0
 Author: WebDevStudios
 Author URI: http://webdevstudios.com
 License: GPLv2
 */
-
-// Helpful dev links:
-// http://jelled.com/instagram/lookup-user-id
-// http://instagram.com/developer/clients/manage/
-
 class WDS_Instagram_Widget extends WP_Widget {
 
 
@@ -50,34 +45,34 @@ class WDS_Instagram_Widget extends WP_Widget {
 			'count'     => $instance['count'],
 		) );
 
-		if( false !== $instagram ): ?>
+		// If we have Instagrams
+		if ( false !== $instagram ) : ?>
 
-		<?php
-			// Allow the image resolution to be filtered to use any available image resolutions from Instagram
-			// low_resolution, thumbnail, standard_resolution
-			$image_res = apply_filters( 'wds_instagram_widget_image_resolution', 'thumbnail' );
+			<?php
+				// Allow the image resolution to be filtered to use any available image resolutions from Instagram
+				// low_resolution, thumbnail, standard_resolution
+				$image_res = apply_filters( 'wds_instagram_widget_image_resolution', 'thumbnail' );
 
-			echo $args['before_widget'];
-			echo $args['before_title'] . esc_html( $title ) . $args['after_title'];
-		?>
+				echo $args['before_widget'];
+				echo $args['before_title'] . esc_html( $title ) . $args['after_title'];
+			?>
 
-		<ul class="instagram-widget">
+			<ul class="instagram-widget">
 
-		<?php
-			foreach( $instagram['data'] as $key => $image ) {
-				echo apply_filters( 'wds_instagram_widget_image_html', sprintf( '<li class="instagram-image"><a href="%1$s"><img src="%2$s" /></a></li>',
-					$image['link'],
-					$image['images'][ $image_res ]['url']
-				), $image );
-			}
-		?>
+			<?php
+				foreach( $instagram['data'] as $key => $image ) {
+					echo apply_filters( 'wds_instagram_widget_image_html', sprintf( '<li><a href="%1$s"><img class="instagram-image" src="%2$s" alt="%3$s" title="%3$s" /></a></li>',
+						$image['link'],
+						$image['images'][ $image_res ]['url'],
+						$image['title']
+					), $image );
+				}
+			?>
 
-			<a href="https://instagram.com/<?php echo esc_html( $username ); ?>"><?php printf( __( 'Follow %1$s on Instagram!', 'wds-instagram' ), esc_html( $username ) ); ?></a>
-		</ul>
+				<a href="https://instagram.com/<?php echo esc_html( $username ); ?>"><?php printf( __( 'Follow %1$s on Instagram', 'wds-instagram' ), esc_html( $username ) ); ?></a>
+			</ul>
 
-		<?php
-			echo $args['after_widget'];
-		?>
+			<?php echo $args['after_widget']; ?>
 
 		<?php elseif( ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) && ( defined( 'WP_DEBUG_DISPLAY' ) && false !== WP_DEBUG_DISPLAY ) ): ?>
 			<div id="message" class="error"><p><?php _e( 'Error: We were unable to fetch your instagram feed.', 'wds-instagram' ); ?></p></div>
@@ -122,7 +117,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 				'id'          => $this->get_field_id( 'username' ),
 				'type'        => 'text',
 				'value'       => $username,
-				'placeholder' => 'gregoryrickaby'
+				'placeholder' => 'myusername'
 			)
 		);
 
@@ -133,7 +128,8 @@ class WDS_Instagram_Widget extends WP_Widget {
 				'id'          => $this->get_field_id( 'user_id' ),
 				'type'        => 'text',
 				'value'       => $user_id,
-				'placeholder' => '476420644'
+				'placeholder' => '476220644',
+				'desc'        => sprintf( __( 'Lookup your User ID <a href="%1$s" target="_blank">here</a>', 'wds-instagram' ), 'http://jelled.com/instagram/lookup-user-id' )
 			)
 		);
 
@@ -144,7 +140,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 				'id'          => $this->get_field_id( 'client_id' ),
 				'type'        => 'text',
 				'value'       => $client_id,
-				'placeholder' => '943c899bab2a47e6ae341d3d1943e73f',
+				'placeholder' => '943c89932b2a47e6ae341d3d1943e73f',
 				'desc'        => sprintf( __( 'Register a new client <a href="%1$s" target="_blank">here</a>', 'wds-instagram' ), 'http://instagram.com/developer/clients/manage/' )
 			)
 		);
@@ -271,7 +267,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 			$instagrams = maybe_unserialize( $instagrams );
 
 			// Store Instagrams in a transient, and expire every hour
-			set_transient( $key, $instagrams, apply_filters( 'wds_instagram_widget_cache_lifetime', 60 * MINUTE_IN_SECONDS ) );
+			set_transient( $key, $instagrams, apply_filters( 'wds_instagram_widget_cache_lifetime', 1 * HOUR_IN_SECONDS ) );
 		}
 
 		return $instagrams;
