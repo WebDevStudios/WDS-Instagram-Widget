@@ -1,4 +1,4 @@
 Instagram
 =========
 
-A simple Instagram widget
+(eventually) a full suite of simple Instagram widgets
