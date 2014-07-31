@@ -1,4 +1,4 @@
-Instagram
+Instagram Widget
 =========
 
-(eventually) a full suite of simple Instagram widgets
+A bare-bones (no CSS) Instagram Widget to easily display your most recent Instagrams!
