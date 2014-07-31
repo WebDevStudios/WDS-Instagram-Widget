@@ -4,7 +4,7 @@ WDS Instagram Suite
 
 ## Currently Active Widgets
 
-A bare-bones (no CSS) Instagram Widget to easily display your most recent Instagrams!
+* A bare-bones (no CSS) Instagram Widget to easily display your most recent Instagrams!
 
 ## Future Widgets
 
