@@ -51,7 +51,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 			<?php
 				// Allow the image resolution to be filtered to use any available image resolutions from Instagram
 				// low_resolution, thumbnail, standard_resolution
-				$image_res = apply_filters( 'wds_instagram_widget_image_resolution', 'thumbnail' );
+				$image_res = apply_filters( 'wds_instagram_widget_image_resolution', 'standard_resolution' );
 
 				echo $args['before_widget'];
 				echo $args['before_title'] . esc_html( $title ) . $args['after_title'];
