@@ -1,12 +1,13 @@
 <?php
 /*
-Plugin Name: Instagram Widget
+Plugin Name: WDS Instagram Widget
 Description: Display your latest Instagrams in a sidebar widget.
-Version: 1.0
+Version: 1.1
 Author: WebDevStudios
 Author URI: http://webdevstudios.com
 License: GPLv2
 */
+
 class WDS_Instagram_Widget extends WP_Widget {
 
 
@@ -129,7 +130,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 				'type'        => 'text',
 				'value'       => $user_id,
 				'placeholder' => '476220644',
-				'desc'        => sprintf( __( 'Lookup your User ID <a href="%1$s" target="_blank">here</a>', 'wds-instagram' ), 'http://jelled.com/instagram/lookup-user-id' )
+				'desc'        => sprintf( __( 'Lookup your User ID <a href="%1$s" target="_blank">here</a>', 'wds-instagram' ), 'http://findmyinstagramid.com/' )
 			)
 		);
 
@@ -177,7 +178,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 				$instance[$value] = sanitize_text_field( $new_instance[$value] );
 			}
 
-			delete_transient( 'wds_instagram_widget_' . md5( $this->id, $instance['count'] ) );
+			delete_transient( $this->id );
 
 		return $instance;
 
@@ -241,7 +242,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 		}
 
 		// Check for transient
-		$key = 'wds_instagram_widget_' . md5( $this->id, $args['count'] );
+		$key = $this->id;
 		if ( false === ( $instagrams = get_transient( $key ) ) ) {
 
 			// Ping Instragram's API
