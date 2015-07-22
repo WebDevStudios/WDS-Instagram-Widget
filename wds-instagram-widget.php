@@ -12,14 +12,14 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 
 	/**
-	 * Contruct widget
+	 * Contruct widget.
 	 */
 	public function __construct() {
 
 		parent::__construct(
 			'wds_instagram_widget', // Base ID
-			__( 'Instagram Widget', 'wds-instagram' ), // Name
-			array( 'description' => __( 'Display your latest Instagrams in a sidebar widget.', 'wds-instagram' ) ) // Args
+			esc_html__( 'Instagram Widget', 'wds-instagram' ), // Name
+			array( 'description' => esc_html__( 'Display your latest Instagrams in a sidebar widget.', 'wds-instagram' ) ) // Args
 		);
 
 	}
@@ -40,7 +40,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 		$username = ( ! empty( $instance['username'] ) ) ? esc_attr( $instance['username'] ) : '';
 		$hashtag  = ( ! empty( $instance['hashtag'] ) ) ? esc_attr( $instance['hashtag'] ) : '';
 
-		// Get Instagrams
+		// Get instagrams
 		$instagram = $this->get_instagrams( array(
 			'user_id'     => $instance['user_id'],
 			'client_id'   => $instance['client_id'],
@@ -49,7 +49,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 			'flush_cache' => false,
 		) );
 
-		// If we have Instagrams
+		// If we have instagrams
 		if ( false !== $instagram ) : ?>
 
 			<?php
@@ -73,13 +73,13 @@ class WDS_Instagram_Widget extends WP_Widget {
 				}
 			?>
 
-				<a href="https://instagram.com/<?php echo esc_html( $username ); ?>"><?php printf( __( 'Follow %1$s on Instagram', 'wds-instagram' ), esc_html( $username ) ); ?></a>
+				<a href="https://instagram.com/<?php echo esc_html( $username ); ?>"><?php printf( esc_html__( 'Follow %1$s on Instagram', 'wds-instagram' ), esc_html( $username ) ); ?></a>
 			</ul>
 
 			<?php echo $args['after_widget']; ?>
 
 		<?php elseif( ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) && ( defined( 'WP_DEBUG_DISPLAY' ) && false !== WP_DEBUG_DISPLAY ) ): ?>
-			<div id="message" class="error"><p><?php _e( 'Error: We were unable to fetch your instagram feed.', 'wds-instagram' ); ?></p></div>
+			<div id="message" class="error"><p><?php esc_html_e( 'Error: We were unable to fetch your instagram feed.', 'wds-instagram' ); ?></p></div>
 		<?php endif;
 
 
@@ -106,7 +106,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 		$this->form_input(
 			array(
-				'label'       => __( 'Widget Title:', 'wds-instagram'),
+				'label'       => esc_html__( 'Widget Title:', 'wds-instagram'),
 				'name'        => $this->get_field_name( 'title' ),
 				'id'          => $this->get_field_id( 'title' ),
 				'type'        => 'text',
@@ -117,7 +117,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 		$this->form_input(
 			array(
-				'label'       => __( 'Username:', 'wds-instagram'),
+				'label'       => esc_html__( 'Username:', 'wds-instagram'),
 				'name'        => $this->get_field_name( 'username' ),
 				'id'          => $this->get_field_id( 'username' ),
 				'type'        => 'text',
@@ -128,31 +128,31 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 		$this->form_input(
 			array(
-				'label'       => __( 'User ID:', 'wds-instagram'),
+				'label'       => esc_html__( 'User ID:', 'wds-instagram'),
 				'name'        => $this->get_field_name( 'user_id' ),
 				'id'          => $this->get_field_id( 'user_id' ),
 				'type'        => 'text',
 				'value'       => $user_id,
 				'placeholder' => '476220644',
-				'desc'        => sprintf( __( 'Lookup your User ID <a href="%1$s" target="_blank">here</a>', 'wds-instagram' ), 'http://findmyinstagramid.com/' )
+				'desc'        => sprintf( esc_html__( 'Lookup your User ID <a href="%1$s" target="_blank">here</a>', 'wds-instagram' ), 'http://findmyinstagramid.com/' )
 			)
 		);
 
 		$this->form_input(
 			array(
-				'label'       => __( 'Client ID:', 'wds-instagram'),
+				'label'       => esc_html__( 'Client ID:', 'wds-instagram'),
 				'name'        => $this->get_field_name( 'client_id' ),
 				'id'          => $this->get_field_id( 'client_id' ),
 				'type'        => 'text',
 				'value'       => $client_id,
 				'placeholder' => '943c89932b2a47e6ae341d3d1943e73f',
-				'desc'        => sprintf( __( 'Register a new client <a href="%1$s" target="_blank">here</a>', 'wds-instagram' ), 'http://instagram.com/developer/clients/manage/' )
+				'desc'        => sprintf( esc_html__( 'Register a new client <a href="%1$s" target="_blank">here</a>', 'wds-instagram' ), 'http://instagram.com/developer/clients/manage/' )
 			)
 		);
 
 		$this->form_input(
 			array(
-				'label'       => __( 'Photo Count:', 'wds-instagram'),
+				'label'       => esc_html__( 'Photo Count:', 'wds-instagram'),
 				'name'        => $this->get_field_name( 'count' ),
 				'id'          => $this->get_field_id( 'count' ),
 				'type'        => 'text',
@@ -163,7 +163,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 		$this->form_input(
 			array(
-				'label'       => __( 'Display a hashtag instead?', 'wds-instagram'),
+				'label'       => esc_html__( 'Display a hashtag instead?', 'wds-instagram'),
 				'name'        => $this->get_field_name( 'hashtag' ),
 				'id'          => $this->get_field_id( 'hashtag' ),
 				'type'        => 'text',
@@ -202,10 +202,9 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 
 	/**
-	 * Build each form input
+	 * Build each form input.
 	 *
-	 * @param  array  $args [description]
-	 * @return [type]       [description]
+	 * @param  array  $args  the array of args for each input
 	 */
 	public function form_input( $args = array() ) {
 
@@ -241,7 +240,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 
 	/**
-	 * Get data from Instagram API
+	 * Get data from Instagram API.
 	 *
 	 * @param  array  $args  Defaults arguments to pass to Instagram API
 	 * @return array  $instagrams  An array of Instagram data
@@ -305,7 +304,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 			$data = maybe_unserialize( $data );
 
 			// Store Instagrams in a transient, and expire every hour
-			set_transient( $key, $data, apply_filters( 'wds_instagram_widget_cache_lifetime', 1 * HOUR_IN_SECONDS ) );
+			set_transient( $transient_key, $data, apply_filters( 'wds_instagram_widget_cache_lifetime', 1 * HOUR_IN_SECONDS ) );
 		}
 
 		return $data;
