@@ -4,6 +4,10 @@ A bare-bones (no CSS) widget for displaying your most recent Instagram photos.
 
 ## Changelog
 
+v1.2
+* Add ability to display instagrams by #hashtag
+* Misc. optimizations
+
 v1.1
 * Update branding
 * Update "Find User ID" lookup URL

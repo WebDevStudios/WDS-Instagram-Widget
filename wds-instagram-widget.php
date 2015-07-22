@@ -2,7 +2,7 @@
 /*
 Plugin Name: WDS Instagram Widget
 Description: Display your latest Instagrams in a sidebar widget.
-Version: 1.1
+Version: 1.2
 Author: WebDevStudios
 Author URI: http://webdevstudios.com
 License: GPLv2
@@ -38,12 +38,15 @@ class WDS_Instagram_Widget extends WP_Widget {
 		// Get widget options
 		$title    = ( ! empty( $instance['title'] ) ) ? apply_filters( 'widget_title', $instance['title'] ) : '';
 		$username = ( ! empty( $instance['username'] ) ) ? esc_attr( $instance['username'] ) : '';
+		$hashtag  = ( ! empty( $instance['hashtag'] ) ) ? esc_attr( $instance['hashtag'] ) : '';
 
 		// Get Instagrams
 		$instagram = $this->get_instagrams( array(
-			'user_id'   => $instance['user_id'],
-			'client_id' => $instance['client_id'],
-			'count'     => $instance['count'],
+			'user_id'     => $instance['user_id'],
+			'client_id'   => $instance['client_id'],
+			'count'       => $instance['count'],
+			'hashtag'     => $instance['hashtag'],
+			'flush_cache' => false,
 		) );
 
 		// If we have Instagrams
@@ -98,6 +101,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 		$user_id     = ( ! empty( $instance['user_id'] ) ) ? $instance['user_id'] : '';
 		$client_id   = ( ! empty( $instance['client_id'] ) ) ? $instance['client_id'] : '';
 		$count       = ( ! empty( $instance['count'] ) ) ? $instance['count'] : '';
+		$hashtag     = ( ! empty( $instance['hashtag'] ) ) ? $instance['hashtag'] : '';
 		$placeholder = ( ! empty( $instance['placeholder'] ) ) ? $instance['placeholder'] : '';
 
 		$this->form_input(
@@ -157,6 +161,18 @@ class WDS_Instagram_Widget extends WP_Widget {
 			)
 		);
 
+		$this->form_input(
+			array(
+				'label'       => __( 'Display a hashtag instead?', 'wds-instagram'),
+				'name'        => $this->get_field_name( 'hashtag' ),
+				'id'          => $this->get_field_id( 'hashtag' ),
+				'type'        => 'text',
+				'value'       => $hashtag,
+				'placeholder' => 'optional',
+				'desc'        => 'One #hashtag only'
+			)
+		);
+
 	}
 
 
@@ -174,7 +190,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 		$instance = $old_instance;
 
-			foreach ( array( 'title', 'username', 'user_id', 'client_id', 'count' ) as $key => $value ) {
+			foreach ( array( 'title', 'username', 'user_id', 'client_id', 'count', 'hashtag' ) as $key => $value ) {
 				$instance[$value] = sanitize_text_field( $new_instance[$value] );
 			}
 
@@ -187,6 +203,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 	/**
 	 * Build each form input
+	 *
 	 * @param  array  $args [description]
 	 * @return [type]       [description]
 	 */
@@ -235,18 +252,37 @@ class WDS_Instagram_Widget extends WP_Widget {
 		$user_id   = ( ! empty( $args['user_id'] ) ) ? $args['user_id'] : '';
 		$client_id = ( ! empty( $args['client_id'] ) ) ? $args['client_id'] : '';
 		$count     = ( ! empty( $args['count'] ) ) ? $args['count'] : '';
+		$hashtag   = ( ! empty( $args['hashtag'] ) ) ? $args['hashtag'] : '';
+		$flush     = ( ! empty( $args['flush_cache'] ) ) ? $args['flush_cache'] : '';
 
 		// If no client id or user id, bail
 		if ( empty( $client_id ) || empty( $user_id ) ) {
 			return false;
 		}
 
-		// Check for transient
-		$key = $this->id;
-		if ( false === ( $instagrams = get_transient( $key ) ) ) {
+		// Get instagrams by username
+		$api_url = 'https://api.instagram.com/v1/users/' . esc_html( $user_id ) . '/media/recent/';
+
+		// Get instagrams by hashtag
+		if ( $hashtag ) {
+
+			// Remove the # symbol
+			$hashtag = ltrim( $hashtag, '#' );
+
+			// Switch the $api_url to search for hashtags
+			$api_url = 'https://api.instagram.com/v1/tags/' . esc_html( $hashtag ) . '/media/recent/';
+		}
+
+		// Set transient key
+		$transient_key = $this->id;
+
+		// Attempt to fetch from transient
+		$data = get_transient( $transient_key );
+
+		// If we're flushing or there isn't transient
+		if ( $flush || false === ( $data ) ) {
 
 			// Ping Instragram's API
-			$api_url = 'https://api.instagram.com/v1/users/' . esc_html( $user_id ) . '/media/recent/';
 			$response = wp_remote_get( add_query_arg( array(
 				'client_id' => esc_html( $client_id ),
 				'count'     => absint( $count )
@@ -258,20 +294,21 @@ class WDS_Instagram_Widget extends WP_Widget {
 			}
 
 			// Parse the API data and place into an array
-			$instagrams = json_decode( wp_remote_retrieve_body( $response ), true );
+			$data = json_decode( wp_remote_retrieve_body( $response ), true );
 
 			// Are the results in an array?
-			if ( ! is_array( $instagrams ) ) {
+			if ( ! is_array( $data ) ) {
 				return false;
 			}
 
-			$instagrams = maybe_unserialize( $instagrams );
+			// Unserialize the results
+			$data = maybe_unserialize( $data );
 
 			// Store Instagrams in a transient, and expire every hour
-			set_transient( $key, $instagrams, apply_filters( 'wds_instagram_widget_cache_lifetime', 1 * HOUR_IN_SECONDS ) );
+			set_transient( $key, $data, apply_filters( 'wds_instagram_widget_cache_lifetime', 1 * HOUR_IN_SECONDS ) );
 		}
 
-		return $instagrams;
+		return $data;
 
 	}
 
