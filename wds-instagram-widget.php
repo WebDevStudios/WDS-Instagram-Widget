@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WDS Instagram Widget
  * Description: Display your latest Instagrams in a sidebar widget.
- * Version: 1.2
+ * Version: 1.3
  * Author: WebDevStudios
  * Author URI: http://webdevstudios.com
  * License: GPLv2
@@ -34,7 +34,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 	/**
 	 * Permit the authorization variables to be processed from Instagram.
 	 *
-	 * @since 1.2.0
+	 * @since 1.3.0
 	 *
 	 * @param array $vars The registered query vars.
 	 */
@@ -46,7 +46,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 	/**
 	 * Authorize the Instgram account.
 	 *
-	 * @since 1.2.0
+	 * @since 1.3.0
 	 */
 	public function authorize_instagram_account() {
 
