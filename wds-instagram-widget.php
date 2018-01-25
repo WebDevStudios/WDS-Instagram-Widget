@@ -26,14 +26,13 @@ class WDS_Instagram_Widget extends WP_Widget {
 	 *
 	 * @since 0.1.2
 	 */
-	public function init() {
+	public static function get_instance() {
 
 		if ( null === self::$single_instance ) {
 			self::$single_instance = new self();
 		}
 
 		return self::$single_instance;
-
 	}
 
 	/**
@@ -177,7 +176,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 						), $image );
 					}
 				?>
-				<a href="https://instagram.com/<?php echo esc_html( $username ); ?>"><?php printf( esc_html__( 'Follow %1$s on Instagram', 'wds-instagram' ), esc_html( $username ) ); ?></a>
+				<a href="<?php echo esc_url( 'https://instagram.com/' . $username ); ?>"><?php printf( esc_html__( 'Follow %1$s on Instagram', 'wds-instagram' ), esc_html( $username ) ); ?></a>
 			</ul>
 		<?php
 		echo $args['after_widget'];
@@ -431,4 +430,4 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 } // WDS_Instagram_Widget
 
-add_action( 'widgets_init', array( WDS_Instagram_Widget::init(), 'hooks' ) );
+add_action( 'widgets_init', array( WDS_Instagram_Widget::get_instance(), 'hooks' ) );
