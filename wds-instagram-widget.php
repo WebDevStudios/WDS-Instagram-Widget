@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WDS Instagram Widget
  * Description: Display your latest Instagrams in a sidebar widget.
- * Version: 1.3
+ * Version: 1.2
  * Author: WebDevStudios
  * Author URI: http://webdevstudios.com
  * License: GPLv2
@@ -14,6 +14,29 @@
 class WDS_Instagram_Widget extends WP_Widget {
 
 	/**
+	 * Plugin class
+	 *
+	 * @var   WDS_Instagram_Widget
+	 * @since 0.1.2
+	 */
+	protected static $single_instance = null;
+
+	/**
+	 * Initialize the widget.
+	 *
+	 * @since 0.1.2
+	 */
+	public function init() {
+
+		if ( null === self::$single_instance ) {
+			self::$single_instance = new self();
+		}
+
+		return self::$single_instance;
+
+	}
+
+	/**
 	 * Contruct widget.
 	 */
 	public function __construct() {
@@ -23,6 +46,16 @@ class WDS_Instagram_Widget extends WP_Widget {
 			esc_html__( 'Instagram Widget', 'wds-instagram' ), // Widget Name.
 			array( 'description' => esc_html__( 'Display your latest Instagrams in a sidebar widget.', 'wds-instagram' ) ) // The args.
 		);
+	}
+
+	/**
+	 * The hooks.
+	 *
+	 * @since 0.1.2
+	 */
+	public function hooks() {
+
+		register_widget( 'WDS_Instagram_Widget' );
 
 		// Authorization hooks.
 		add_filter( 'query_vars', array( $this, 'add_query_vars' ) );
@@ -34,7 +67,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 	/**
 	 * Permit the authorization variables to be processed from Instagram.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param array $vars The registered query vars.
 	 */
@@ -46,7 +79,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 	/**
 	 * Authorize the Instgram account.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 */
 	public function authorize_instagram_account() {
 
@@ -57,8 +90,8 @@ class WDS_Instagram_Widget extends WP_Widget {
 			return;
 		}
 
-		$widget_settings = get_option( $this->option_name );
-		$widget_settings = isset( $widget_settings[ $this->number ] ) ? $widget_settings[ $this->number ] : array();
+		$widget_settings = get_option( $this->option_name, array() );
+		$widget_settings = ! empty( $widget_settings ) ? array_shift( $widget_settings ) : array();
 
 		// Authenticate the authorization.
 		$response = wp_remote_post( 'https://api.instagram.com/oauth/access_token', array(
@@ -72,13 +105,17 @@ class WDS_Instagram_Widget extends WP_Widget {
 			),
 		) );
 
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return;
+		}
+
 		$data = json_decode( wp_remote_retrieve_body( $response ) );
 
 		if ( ! isset( $data->access_token ) ) {
 			return;
 		}
 
-		update_option( 'wds_instagram_widget_access_token', $data->access_token );
+		update_option( 'wds_instagram_widget_access_token', sanitize_text_field( $data->access_token ) );
 
 		wp_redirect( admin_url( 'widgets.php' ) );
 		die();
@@ -96,52 +133,54 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 		// Get widget options.
 		$title    = ( ! empty( $instance['title'] ) ) ? apply_filters( 'widget_title', $instance['title'] ) : '';
-		$username = ( ! empty( $instance['username'] ) ) ? esc_attr( $instance['username'] ) : '';
-		$hashtag  = ( ! empty( $instance['hashtag'] ) ) ? esc_attr( $instance['hashtag'] ) : '';
+		$username = ( ! empty( $instance['username'] ) ) ? $instance['username'] : '';
+		$hashtag  = ( ! empty( $instance['hashtag'] ) ) ? $instance['hashtag'] : '';
 
 		// Get instagrams.
 		$images = $this->get_instagrams( array(
 			'count'       => $instance['count'],
-			'hashtag'     => $instance['hashtag'],
+			'hashtag'     => $hashtag,
 			'flush_cache' => $instance['flush_cache'],
 		) );
 
+		if (
+			( WP_DEBUG === defined( 'WP_DEBUG' ) && true ) &&
+			( WP_DEBUG_DISPLAY !== defined( 'WP_DEBUG_DISPLAY' ) && false ) &&
+			empty( $images )
+		) {
+			?>
+			<div id="message" class="error"><p><?php esc_html_e( 'Error: We were unable to fetch your instagram feed.', 'wds-instagram' ); ?></p></div>
+			<?php
+			return;
+		}
+
+		if ( empty( $images ) ) {
+			return;
+		}
+
 		// Display the instagram pics.
-		if ( $images ) : ?>
+		// Allow the image resolution to be filtered to use any available image resolutions from Instagram.
+		// low_resolution, thumbnail, standard_resolution.
+		$image_res = apply_filters( 'wds_instagram_widget_image_resolution', 'standard_resolution' );
 
-			<?php
-				// Allow the image resolution to be filtered to use any available image resolutions from Instagram.
-				// low_resolution, thumbnail, standard_resolution.
-				$image_res = apply_filters( 'wds_instagram_widget_image_resolution', 'standard_resolution' );
+		echo $args['before_widget'];
+		echo $args['before_title'] . esc_html( $title ) . $args['after_title'];
 
-				echo $args['before_widget'];
-				echo $args['before_title'] . esc_html( $title ) . $args['after_title'];
-			?>
-
+		?>
 			<ul class="instagram-widget">
-
-			<?php
-
-				foreach ( $images as $key => $image ) {
-
-					echo apply_filters( 'wds_instagram_widget_image_html', sprintf( '<li><a href="%1$s"><img class="instagram-image" src="%2$s" alt="%3$s" title="%3$s" /></a></li>',
-						$image['link'],
-						$image['images'][ $image_res ]['url'],
-						$image['caption']['text']
-					), $image );
-				}
-			?>
-
+				<?php
+					foreach ( $images as $key => $image ) {
+						echo apply_filters( 'wds_instagram_widget_image_html', sprintf( '<li><a href="%1$s"><img class="instagram-image" src="%2$s" alt="%3$s" title="%3$s" /></a></li>',
+							esc_attr( $image['link'] ),
+							esc_url( $image['images'][ $image_res ]['url'] ),
+							esc_attr( $image['caption'] )
+						), $image );
+					}
+				?>
 				<a href="https://instagram.com/<?php echo esc_html( $username ); ?>"><?php printf( esc_html__( 'Follow %1$s on Instagram', 'wds-instagram' ), esc_html( $username ) ); ?></a>
 			</ul>
-
-			<?php echo $args['after_widget']; ?>
-
-		<?php elseif ( ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) && ( defined( 'WP_DEBUG_DISPLAY' ) && false !== WP_DEBUG_DISPLAY ) ): ?>
-			<div id="message" class="error"><p><?php esc_html_e( 'Error: We were unable to fetch your instagram feed.', 'wds-instagram' ); ?></p></div>
 		<?php
-			endif;
-
+		echo $args['after_widget'];
 	}
 
 	/**
@@ -159,25 +198,29 @@ class WDS_Instagram_Widget extends WP_Widget {
 		$client_secret = ( ! empty( $instance['client_secret'] ) ) ? $instance['client_secret'] : '';
 		$count         = ( ! empty( $instance['count'] ) ) ? $instance['count'] : '';
 		$hashtag       = ( ! empty( $instance['hashtag'] ) ) ? $instance['hashtag'] : '';
-		$placeholder   = ( ! empty( $instance['placeholder'] ) ) ? $instance['placeholder'] : '';
 		$flush_cache   = ( ! empty( $instance['flush_cache'] ) ) ? $instance['flush_cache'] : '';
 
 		?>
-			<h4>Widget Setup:</h4>
+			<h4><?php esc_html_e( 'Widget Setup', 'wds-instagram' ); ?>:</h4>
 			<ol>
-				<li>Register a <a href="http://instagram.com/developer/clients/manage/" target="_blank">New Instagram Client</a>. Be sure to provide <strong><?php echo home_url( 'authorize_instagram' ); ?></strong> as the "Valid Redirect URI".</li>
-				<li>Enter the Client ID and Client Secret below and save.</li>
-				<li>Press the "Connect To Instagram" button to give your site access to your Instagram account.</li>
+				<li><?php esc_html_e( 'Register a', 'wds-instagram' ); ?> <a href="http://instagram.com/developer/clients/manage/" target="_blank"><?php esc_html_e( 'New Instagram Client', 'wds-instagram' ); ?></a>. <?php esc_html_e( 'Be sure to provide', 'wds-instagram' ); ?> <strong><?php echo home_url( 'authorize_instagram' ); ?></strong> <?php esc_html_e( 'as the "Valid Redirect URI"', 'wds-instagram' ); ?>.</li>
+				<li><?php esc_html_e( 'Enter the Client ID and Client Secret below and save.', 'wds-instagram' ); ?></li>
+				<li><?php esc_html_e( 'Press the "Connect To Instagram" button to give your site access to your Instagram account.', 'wds-instagram' ); ?></li>
 			</ol>
 			<hr />
-			<p>Status: <strong><?php echo $this->get_access_token() ? 'Connected' : 'Not Connected'; ?></strong></p>
+			<p><?php esc_html_e( 'Status', 'wds-instagram' ); ?>: <strong><?php echo $this->get_access_token() ? 'Connected' : 'Not Connected'; ?></strong></p>
 			<?php
 				// Check to see if we have an access_token.
 				if ( $client_id && $client_secret ) {
 
-					$authorization_url = "https://api.instagram.com/oauth/authorize/?client_id={$client_id}&redirect_uri=" . home_url( 'authorize_instagram' ) . "&response_type=code&scope=basic+public_content";
+					$authorization_url = add_query_arg( array(
+						'client_id'     => esc_attr( $client_id ),
+						'redirect_uri'  => home_url( 'authorize_instagram' ),
+						'response_type' => 'code',
+						'scope'         => 'basic+public_content',
+					), 'https://api.instagram.com/oauth/authorize/' );
 					?>
-						<p><a class="button" href="<?php echo esc_attr( $authorization_url ); ?>">Connect Your Instagram Account</a></p>
+						<p><a class="button" href="<?php echo esc_url( $authorization_url ); ?>"><?php esc_html_e( 'Connect Your Instagram Account', 'wds-instagram' ); ?></a></p>
 					<?php
 				}
 			?>
@@ -318,9 +361,9 @@ class WDS_Instagram_Widget extends WP_Widget {
 	/**
 	 * Get data from Instagram API.
 	 *
-	 * @param array $args  Defaults arguments to pass to Instagram API.
+	 * @param array $args Defaults arguments to pass to Instagram API.
 	 *
-	 * @return array $instagrams  An array of Instagram data
+	 * @return array $instagrams An array of Instagram data
 	 */
 	public function get_instagrams( $args = array() ) {
 
@@ -344,8 +387,12 @@ class WDS_Instagram_Widget extends WP_Widget {
 			'count'        => absint( $count ),
 		), $api_url ) );
 
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return $instagrams;
+		}
+
 		$response   = json_decode( wp_remote_retrieve_body( $response ), 1 );
-		$instagrams = isset( $response['data'] ) ? $response['data'] : array();
+		$instagrams = isset( $response['data'] ) ? $this->sanitize_instagrams( $response['data'] ) : array();
 
 		// Store Instagrams in a transient, and expire every hour.
 		set_transient( 'wds_instagram_widget_images', $instagrams, apply_filters( 'wds_instagram_widget_cache_lifetime', 1 * HOUR_IN_SECONDS ) );
@@ -353,13 +400,35 @@ class WDS_Instagram_Widget extends WP_Widget {
 		return $instagrams;
 	}
 
+	/**
+	 * Sanitize the response from Instagram for the images.
+	 *
+	 * @since 0.1.2
+	 *
+	 * @param array $instagrams The images from Instagram.
+	 *
+	 * @return array $images
+	 */
+	public function sanitize_instagrams( $instagrams = array() ) {
+
+		if ( empty( $instagrams ) ) {
+			return $instagrams;
+		}
+
+		$images = array();
+
+		foreach ( $instagrams as $image ) {
+
+			$images[] = array(
+				'link'    => isset( $image['link'] ) ? esc_url( $image['link'] ) : '',
+				'images'  => isset( $image['images'] ) ? $image['images'] : array(),
+				'caption' => isset( $image['caption']['text'] ) ? esc_attr( $image['caption']['text'] ) : '',
+			);
+		}
+
+		return $images;
+	}
+
 } // WDS_Instagram_Widget
 
-
-/**
- * Register Widget with WordPress
- */
-function wds_start_instagram() {
-	register_widget( 'WDS_Instagram_Widget' );
-}
-add_action( 'widgets_init', 'wds_start_instagram' );
+add_action( 'widgets_init', array( WDS_Instagram_Widget::init(), 'hooks' ) );
