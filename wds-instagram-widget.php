@@ -414,18 +414,31 @@ class WDS_Instagram_Widget extends WP_Widget {
 			return $instagrams;
 		}
 
-		$images = array();
+		$posts = array();
 
-		foreach ( $instagrams as $image ) {
+		foreach ( $instagrams as $post ) {
 
-			$images[] = array(
-				'link'    => isset( $image['link'] ) ? esc_url( $image['link'] ) : '',
-				'images'  => isset( $image['images'] ) ? $image['images'] : array(),
-				'caption' => isset( $image['caption']['text'] ) ? esc_attr( $image['caption']['text'] ) : '',
+			$images = array();
+
+			// Sanitize the individual image sizes.
+			foreach ( $post['images'] as $size => $instagram ) {
+
+				$images[ $size ] = array(
+					'width'  => absint( $instagram['width'] ),
+					'height' => absint( $instagram['height'] ),
+					'url'    => esc_url_raw( $instagram['url'] ),
+				);
+			}
+
+			// Sanitize the entire instagram object.
+			$posts[] = array(
+				'link'    => isset( $post['link'] ) ? esc_url( $post['link'] ) : '',
+				'images'  => $images,
+				'caption' => isset( $post['caption']['text'] ) ? esc_attr( $post['caption']['text'] ) : '',
 			);
 		}
 
-		return $images;
+		return $posts;
 	}
 
 } // WDS_Instagram_Widget
