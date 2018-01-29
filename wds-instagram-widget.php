@@ -432,9 +432,9 @@ class WDS_Instagram_Widget extends WP_Widget {
 
 			// Sanitize the entire instagram object.
 			$posts[] = array(
-				'link'    => isset( $post['link'] ) ? esc_url( $post['link'] ) : '',
+				'link'    => isset( $post['link'] ) ? esc_url_raw( $post['link'] ) : '',
 				'images'  => $images,
-				'caption' => isset( $post['caption']['text'] ) ? esc_attr( $post['caption']['text'] ) : '',
+				'caption' => isset( $post['caption']['text'] ) ? sanitize_text_field( $post['caption']['text'] ) : '',
 			);
 		}
 
