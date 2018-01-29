@@ -176,7 +176,7 @@ class WDS_Instagram_Widget extends WP_Widget {
 						), $image );
 					}
 				?>
-				<a href="<?php echo esc_url( 'https://instagram.com/' . $username ); ?>"><?php printf( esc_html__( 'Follow %1$s on Instagram', 'wds-instagram' ), esc_html( $username ) ); ?></a>
+				<a href="<?php echo esc_url( 'https://instagram.com/' . $username ); ?>" class="follow-link"><?php printf( esc_html__( 'Follow %1$s on Instagram', 'wds-instagram' ), esc_html( $username ) ); ?></a>
 			</ul>
 		<?php
 		echo $args['after_widget'];
