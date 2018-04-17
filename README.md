@@ -2,6 +2,8 @@ WDS Instagram Widget
 =========
 A bare-bones (no CSS) widget for displaying your most recent Instagram photos.
 
+<a href="https://webdevstudios.com/contact/"><img src="https://webdevstudios.com/wp-content/uploads/2018/04/wds-github-banner.png" alt="WebDevStudios. WordPress for big brands."></a>
+
 ## Instructions
 
 1. Visit https://www.instagram.com/developer/
