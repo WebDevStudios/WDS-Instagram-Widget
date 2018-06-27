@@ -4,7 +4,7 @@ A bare-bones (no CSS) widget for displaying your most recent Instagram photos.
 
 <a href="https://webdevstudios.com/contact/"><img src="https://webdevstudios.com/wp-content/uploads/2018/04/wds-github-banner.png" alt="WebDevStudios. WordPress for big brands."></a>
 
-**Note: Instagram has deprecated much of this API. This widget still works, _if you're showing your own content_. Even then, that functionality will be gone in 2020. It's recommended you look into using the new [Instagram Platform](https://developers.facebook.com/products/instagram/) for API consumption.**
+**Note: Instagram has deprecated much of this API. This widget still works, _if you're showing your own content_. Even then, that functionality will be gone in 2020. It's recommended you look into using the new [Instagram Graph API](https://developers.facebook.com/docs/instagram-api) for media consumption.**
 
 ## Instructions
 
